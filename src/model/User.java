@@ -1,17 +1,22 @@
 package model;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import java.util.ArrayList;
-
 public final class User {
-    int id;
-    String username;
-    String fullName;
-    String password;
+    private int id;
+    private String username;
+    private String fullName;
+    private String password;
 
     public static String[][] userContacts = new String[100][];
+
+    public User() {}
+
+    public User(User user) {
+        this.id = user.id;
+        this.username = user.username;
+        this.fullName = user.fullName;
+        this.password = user.password;
+    }
+
     public int getId() {
         return id;
     }

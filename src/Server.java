@@ -10,12 +10,15 @@ import java.util.List;
 
 public class Server {
     public static List<User> users = new ArrayList<>();
-
     public static List<Channel> channels = new ArrayList<>();
     public static ArrayList<Chat> chatList = new ArrayList<>();
 
     public static void main(String[] args) throws IOException {
         HTTPServer.initializeServer();
+        SQLAdapter.getUserListFromSql();
+        SQLAdapter.getChannelListFromSql();
+        SQLAdapter.getChatListFromSql();
+
         ArrayList<ServerThread> threadList = new ArrayList<>();
         try (ServerSocket serversocket = new ServerSocket(6001)) {
             System.out.println("Waiting for Clients...");

@@ -3,6 +3,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import model.Chat;
+import model.User;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -12,12 +13,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class HTTPServer {
-    static int clientId;
     public static void initializeServer() throws IOException {
         InetAddress localAddress = InetAddress.getByName("127.0.0.1");
         HttpServer server = HttpServer.create(new InetSocketAddress(localAddress, 8080), 0);
-        HttpContext context = server.createContext("/channels/", new ClientHttpHandler());
-        HttpContext context1 = server.createContext("/chats/", new ClientChannelChatHttpHandler());
+        server.createContext("/users/", new GetAllUsersHttpHandler());
+        server.createContext("/channels/", new ClientHttpHandler());
+        server.createContext("/chats/", new ClientChannelChatHttpHandler());
 
         server.start();
     }
@@ -84,7 +85,7 @@ class ClientChannelChatHttpHandler implements HttpHandler {
         } catch (NumberFormatException e) {
             exchange.sendResponseHeaders(400, 0);
             try (OutputStream stream = exchange.getResponseBody()) {
-                stream.write("Invalid Client-ID".getBytes());
+                stream.write("Invalid Channel-ID".getBytes());
             }
             return;
         }
@@ -97,6 +98,49 @@ class ClientChannelChatHttpHandler implements HttpHandler {
         }
 
         String response = "{\"channelChat\":" + filteredChat + "}";
+        exchange.sendResponseHeaders(200, response.length());
+        try (OutputStream stream = exchange.getResponseBody()) {
+            stream.write(response.getBytes());
+        }
+    }
+}
+
+class GetAllUsersHttpHandler implements HttpHandler {
+    @Override
+    public void handle(HttpExchange exchange) throws IOException {
+        String path = exchange.getRequestURI().getPath();
+        String[] pathSplits = path.split("/");
+
+        if (pathSplits.length < 3 || !pathSplits[2].startsWith("Client-ID=")) {
+            exchange.sendResponseHeaders(400, 0);
+            try (OutputStream stream = exchange.getResponseBody()) {
+                stream.write("Invalid path format".getBytes());
+            }
+            return;
+        }
+
+        String clientIdStr = pathSplits[2].substring("Client-ID=".length());
+        int clientId;
+        try {
+            clientId = Integer.parseInt(clientIdStr);
+        } catch (NumberFormatException e) {
+            exchange.sendResponseHeaders(400, 0);
+            try (OutputStream stream = exchange.getResponseBody()) {
+                stream.write("Invalid Client-ID".getBytes());
+            }
+            return;
+        }
+
+        ArrayList<User> userArrayList = new ArrayList<>();
+        for (User user : Server.users) {
+            if (clientId != user.getId()) {
+                User userCopy = new User(user);
+                userCopy.setPassword("****");
+                userArrayList.add(userCopy);
+            }
+        }
+
+        String response = "{\"allUserList\":" + userArrayList + "}";
         exchange.sendResponseHeaders(200, response.length());
         try (OutputStream stream = exchange.getResponseBody()) {
             stream.write(response.getBytes());

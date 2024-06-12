@@ -1,9 +1,9 @@
 import model.Chat;
 import model.Keys;
 import model.User;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
-import javax.swing.*;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -87,14 +87,30 @@ public class ServerThread extends Thread {
 
     private void handleSignup(JSONObject json) {
         String username = json.getString("username");
-        if(username.isEmpty() || username.length() > 15) {
-            sendError(json, "Username is either too short or long!");
-        } else if(usernameExists(username)) {
-            sendError(json, "Username already exist!");
-        } else {
-            registerUser(json);
+        String fullname = json.getString("fullname");
+        String password = json.getString("password");
+
+        if (fullname.length() > 20 || fullname.length() < 3) {
+            sendError(json, "Full name should be between 3 & 20 characters!");
+            return;
         }
+
+        if (username.length() < 8 || !username.matches("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$")) {
+            sendError(json, "Username should be alpha numeric and long!");
+            return;
+        }
+        if (password.length() < 8 || !password.matches("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$")) {
+            sendError(json, "Password should be alpha numeric and long!");
+            return;
+        }
+        if (usernameExists(username)) {
+            sendError(json, "Username already exists!");
+            return;
+        }
+
+        registerUser(json);
     }
+
 
     private Boolean usernameExists(String username) {
         System.out.println("users:");
@@ -124,6 +140,7 @@ public class ServerThread extends Thread {
         }
 
         Server.users.add(user);
+        SQLAdapter.addUserToSql(user.getId(), user.getUsername(), user.getFullName(), user.getPassword());
 
         json.put("command", "registration_successful");
         json.put(Keys.KEY_ID, user.getId());
@@ -167,11 +184,13 @@ public class ServerThread extends Thread {
         chat.setTimestamp(jsonObject.getString(Keys.KEY_TIMESTAMP));
         Server.chatList.add(chat);
 
+        SQLAdapter.addChatToSql(chat.getChannelId(), chat.getSenderId(), chat.getReceiverId(), chat.getMessage(), chat.getTimestamp());
+
         System.out.println("Message added to chatList: " + jsonObject);
         System.out.println("Updated chatlist:" + Server.chatList);
-        sendMessagetoAllThreads(jsonObject.toString());
+        sendMessageToAllThreads(jsonObject.toString());
     }
-    private void sendMessagetoAllThreads(String message) {
+    private void sendMessageToAllThreads(String message) {
         for (ServerThread thread : threadList) {
             thread.sendMessage(message);
         }
@@ -179,6 +198,7 @@ public class ServerThread extends Thread {
 
     private void handleAddNewChannel(JSONObject jsonObject) {
         String username = jsonObject.getString("username");
+        String myUsername = jsonObject.getString("myUsername");
         for(int i = 0; i < Server.users.size(); i++) {
             User user = Server.users.get(i);
             if(username.equalsIgnoreCase(user.getUsername())) {
@@ -191,14 +211,19 @@ public class ServerThread extends Thread {
                 Channel channel = new Channel();
                 channel.userIds.add(id1);
                 channel.userIds.add(id2);
-                channel.userFullNames.add(fullName1);
-                channel.userFullNames.add(fullName2);
+                channel.userFullNames.add("\""+ fullName1+"\"");
+                channel.userFullNames.add("\""+ fullName2 + "\"");
+                channel.usernames.add("\""+ username +"\"");
+                channel.usernames.add("\""+ myUsername + "\"");
                 channel.setChannelId(Server.channels.size() + 1);
                 if(!Server.channels.contains(channel) && !Objects.equals(id1, id2)) {
                     Server.channels.add(channel);
+                    SQLAdapter.addChannelToSql(channel.channelId, channel.userIds, "", channel.userFullNames, channel.usernames);
                     jsonObject.put("channelId", id2);
-                    jsonObject.put("userFullNames", channel.userFullNames);
+                    JSONArray userFullNamesArray = new JSONArray(channel.userFullNames);
+                    jsonObject.put("userFullNames", userFullNamesArray);
                     jsonObject.put("response", "successful");
+                    sendContactToAllThread(jsonObject);
                     break;
                 }
             }
@@ -206,5 +231,13 @@ public class ServerThread extends Thread {
         }
         jsonObject.put("command", "response_add_new_contact");
         sendMessage(jsonObject.toString());
+    }
+
+    private void sendContactToAllThread(JSONObject jsonObject) {
+        for (ServerThread thread : threadList) {
+            jsonObject.put("command", "contact_added_to_server");
+            thread.sendMessage(jsonObject.toString());
+            System.out.println("JSON:" + jsonObject);
+        }
     }
 }
