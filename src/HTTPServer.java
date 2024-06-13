@@ -51,7 +51,7 @@ class ClientHttpHandler implements HttpHandler {
         }
 
         List<Channel> filteredList = new ArrayList<>();
-        for (Channel channel : Server.channels) {
+        for (Channel channel : AppData.getInstance().channels) {
             if (channel.userIds.contains(userId)) {
                 filteredList.add(channel);
             }
@@ -91,7 +91,7 @@ class ClientChannelChatHttpHandler implements HttpHandler {
         }
 
         ArrayList<Chat> filteredChat = new ArrayList<>();
-        for(Chat ch : Server.chatList) {
+        for(Chat ch : AppData.getInstance().chatList) {
             if(channelId == ch.getChannelId()) {
                 filteredChat.add(ch);
             }
@@ -132,7 +132,7 @@ class GetAllUsersHttpHandler implements HttpHandler {
         }
 
         ArrayList<User> userArrayList = new ArrayList<>();
-        for (User user : Server.users) {
+        for (User user : AppData.getInstance().users) {
             if (clientId != user.getId()) {
                 User userCopy = new User(user);
                 userCopy.setPassword("****");

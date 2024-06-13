@@ -93,7 +93,7 @@ public class SQLAdapter {
                 user.setUsername(rowData[1]);
                 user.setFullName(rowData[2]);
                 user.setPassword(rowData[3]);
-                Server.users.add(user);
+                AppData.getInstance().users.add(user);
             }
             System.out.println("Loaded Users from Sql!");
             conn.close();
@@ -149,7 +149,7 @@ public class SQLAdapter {
                 }
                 channel.setUsernames(usernames);
 
-                Server.channels.add(channel);
+                AppData.getInstance().channels.add(channel);
             }
             System.out.println("Loaded Channels from Sql!");
             conn.close();
@@ -179,7 +179,7 @@ public class SQLAdapter {
                 chat.setReceiverId(Integer.parseInt(rowData[2]));
                 chat.setMessage(rowData[3]);
                 chat.setTimestamp(rowData[4]);
-                Server.chatList.add(chat);
+                AppData.getInstance().chatList.add(chat);
             }
             System.out.println("Loaded Chats from Sql!");
             conn.close();

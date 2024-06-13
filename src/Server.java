@@ -9,10 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Server {
-    public static List<User> users = new ArrayList<>();
-    public static List<Channel> channels = new ArrayList<>();
-    public static ArrayList<Chat> chatList = new ArrayList<>();
-
     public static void main(String[] args) throws IOException {
         HTTPServer.initializeServer();
         SQLAdapter.getUserListFromSql();

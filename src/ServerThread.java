@@ -114,10 +114,10 @@ public class ServerThread extends Thread {
 
     private Boolean usernameExists(String username) {
         System.out.println("users:");
-        System.out.println(Server.users);
+        System.out.println(AppData.getInstance().users);
         Boolean found = false;
-        for(int i=0; i < Server.users.size(); i++) {
-            User user = Server.users.get(i);
+        for(int i=0; i < AppData.getInstance().users.size(); i++) {
+            User user = AppData.getInstance().users.get(i);
             if(user.getUsername().equalsIgnoreCase(username)) {
                 found = true;
             }
@@ -132,14 +132,14 @@ public class ServerThread extends Thread {
         user.setFullName(json.getString(Keys.KEY_FULL_NAME));
         user.setPassword(json.getString(Keys.KEY_PASSWORD));
 
-        if(!Server.users.isEmpty()) {
-            int id = Server.users.getLast().getId() + 1;
+        if(!AppData.getInstance().users.isEmpty()) {
+            int id = AppData.getInstance().users.getLast().getId() + 1;
             user.setId(id);
         } else {
             user.setId(1);
         }
 
-        Server.users.add(user);
+        AppData.getInstance().users.add(user);
         SQLAdapter.addUserToSql(user.getId(), user.getUsername(), user.getFullName(), user.getPassword());
 
         json.put("command", "registration_successful");
@@ -148,7 +148,7 @@ public class ServerThread extends Thread {
         sendMessage(json.toString());
 
         System.out.println("users after registration:");
-        System.out.println(Server.users);
+        System.out.println(AppData.getInstance().users);
     }
 
     private void sendError(JSONObject jsonObject, String errorMessage) {
@@ -160,8 +160,8 @@ public class ServerThread extends Thread {
         String username = jsonObject.getString(Keys.KEY_USERNAME);
         String password = jsonObject.getString(Keys.KEY_PASSWORD);
 
-        for(int i = 0; i <Server.users.size(); i++) {
-            User user = Server.users.get(i);
+        for(int i = 0; i <AppData.getInstance().users.size(); i++) {
+            User user = AppData.getInstance().users.get(i);
             if(username.equalsIgnoreCase(user.getUsername()) && password.equalsIgnoreCase(user.getPassword())) {
                 jsonObject.put("command", "response_login_successful");
                 jsonObject.put(Keys.KEY_ID, user.getId());
@@ -182,12 +182,12 @@ public class ServerThread extends Thread {
         chat.setReceiverId(jsonObject.getInt(Keys.KEY_RECEIVER_ID));
         chat.setMessage(jsonObject.getString(Keys.KEY_MESSAGE));
         chat.setTimestamp(jsonObject.getString(Keys.KEY_TIMESTAMP));
-        Server.chatList.add(chat);
+        AppData.getInstance().chatList.add(chat);
 
         SQLAdapter.addChatToSql(chat.getChannelId(), chat.getSenderId(), chat.getReceiverId(), chat.getMessage(), chat.getTimestamp());
 
         System.out.println("Message added to chatList: " + jsonObject);
-        System.out.println("Updated chatlist:" + Server.chatList);
+        System.out.println("Updated chatlist:" + AppData.getInstance().chatList);
         sendMessageToAllThreads(jsonObject.toString());
     }
     private void sendMessageToAllThreads(String message) {
@@ -199,8 +199,8 @@ public class ServerThread extends Thread {
     private void handleAddNewChannel(JSONObject jsonObject) {
         String username = jsonObject.getString("username");
         String myUsername = jsonObject.getString("myUsername");
-        for(int i = 0; i < Server.users.size(); i++) {
-            User user = Server.users.get(i);
+        for(int i = 0; i < AppData.getInstance().users.size(); i++) {
+            User user = AppData.getInstance().users.get(i);
             if(username.equalsIgnoreCase(user.getUsername())) {
                 int id1 = jsonObject.getInt("id");
                 int id2 = user.getId();
@@ -215,9 +215,9 @@ public class ServerThread extends Thread {
                 channel.userFullNames.add("\""+ fullName2 + "\"");
                 channel.usernames.add("\""+ username +"\"");
                 channel.usernames.add("\""+ myUsername + "\"");
-                channel.setChannelId(Server.channels.size() + 1);
-                if(!Server.channels.contains(channel) && !Objects.equals(id1, id2)) {
-                    Server.channels.add(channel);
+                channel.setChannelId(AppData.getInstance().channels.size() + 1);
+                if(!AppData.getInstance().channels.contains(channel) && !Objects.equals(id1, id2)) {
+                    AppData.getInstance().channels.add(channel);
                     SQLAdapter.addChannelToSql(channel.channelId, channel.userIds, "", channel.userFullNames, channel.usernames);
                     jsonObject.put("channelId", id2);
                     JSONArray userFullNamesArray = new JSONArray(channel.userFullNames);
