@@ -1,12 +1,9 @@
-import model.Chat;
-import model.User;
+import App.env;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.List;
 
 public class Server {
     public static void main(String[] args) throws IOException {
@@ -16,7 +13,7 @@ public class Server {
         SQLAdapter.getChatListFromSql();
 
         ArrayList<ServerThread> threadList = new ArrayList<>();
-        try (ServerSocket serversocket = new ServerSocket(6001)) {
+        try (ServerSocket serversocket = new ServerSocket(env.SERVER_SOCKET_PORT)) {
             System.out.println("Waiting for Clients...");
             while (true) {
                 Socket socket = serversocket.accept();

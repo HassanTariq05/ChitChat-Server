@@ -1,15 +1,14 @@
+import App.env;
 import model.Chat;
 import model.User;
 
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class SQLAdapter {
     public static void addUserToSql(int id, String username, String fullName, String password){
         try {
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/Server", "root", "password123");
+            Connection conn = DriverManager.getConnection(env.JDBC_URL, env.JDBC_USER, env.JDBC_PASSWORD);
             PreparedStatement preparedStatement = conn.prepareStatement("INSERT INTO `Server`.`Users`(`user_id`, `user_username`,`user_fullname`, `user_password`) VALUES (?, ?, ?, ?)");
             preparedStatement.setInt(1, id);
             preparedStatement.setString(2, username);
@@ -27,7 +26,7 @@ public class SQLAdapter {
                                        ArrayList<String> userFullNames,ArrayList<String> usernames){
         try {
             Connection conn = DriverManager.getConnection
-                    ("jdbc:mysql://localhost:3306/Server", "root", "password123");
+                    (env.JDBC_URL, env.JDBC_USER, env.JDBC_PASSWORD);
 
             PreparedStatement preparedStatement = conn.prepareStatement
                     ("INSERT INTO `Server`.`Channels`(`channel_channelId`,\n" +
@@ -53,7 +52,7 @@ public class SQLAdapter {
                                        String message, String timestamp){
         try {
             Connection conn = DriverManager.getConnection
-                    ("jdbc:mysql://localhost:3306/Server", "root", "password123");
+                    (env.JDBC_URL, env.JDBC_USER, env.JDBC_PASSWORD);
 
             PreparedStatement preparedStatement = conn.prepareStatement
                     ("INSERT INTO `Server`.`Chats`(`chat_channelId`,\n" +
@@ -77,7 +76,7 @@ public class SQLAdapter {
 
     public static void getUserListFromSql() {
         try {
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/Server", "root", "password123");
+            Connection conn = DriverManager.getConnection(env.JDBC_URL, env.JDBC_USER, env.JDBC_PASSWORD);
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT * FROM Server.Users");
 
@@ -104,7 +103,7 @@ public class SQLAdapter {
 
     public static void getChannelListFromSql() {
         try {
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/Server", "root", "password123");
+            Connection conn = DriverManager.getConnection(env.JDBC_URL, env.JDBC_USER, env.JDBC_PASSWORD);
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT * FROM Server.Channels");
 
@@ -160,7 +159,7 @@ public class SQLAdapter {
 
     public static void getChatListFromSql() {
         try {
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/Server", "root", "password123");
+            Connection conn = DriverManager.getConnection(env.JDBC_URL, env.JDBC_USER, env.JDBC_PASSWORD);
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT * FROM Server.Chats");
 

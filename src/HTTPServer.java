@@ -1,4 +1,4 @@
-import com.sun.net.httpserver.HttpContext;
+import App.env;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
@@ -14,8 +14,8 @@ import java.util.List;
 
 public class HTTPServer {
     public static void initializeServer() throws IOException {
-        InetAddress localAddress = InetAddress.getByName("127.0.0.1");
-        HttpServer server = HttpServer.create(new InetSocketAddress(localAddress, 8080), 0);
+        InetAddress localAddress = InetAddress.getByName(env.HTTP_SERVER_HOST);
+        HttpServer server = HttpServer.create(new InetSocketAddress(localAddress, env.HTTP_SERVER_PORT), 0);
         server.createContext("/users/", new GetAllUsersHttpHandler());
         server.createContext("/channels/", new ClientHttpHandler());
         server.createContext("/chats/", new ClientChannelChatHttpHandler());
